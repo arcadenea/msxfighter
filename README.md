@@ -2,13 +2,13 @@
 MSX fighting game 
 
 
-##Authors:
+## Authors:
 
 - Gabriel Ernesto Cabral
 - Jorge Luis Cabral
 
 
-##Instructions:
+## Instructions:
 
 Build with MAKE, you will need sdcc compiler and sdasz80 assembler in your system.
 
