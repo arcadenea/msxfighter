@@ -1,58 +1,3 @@
-#ifndef  __FIGHTER_H__
-#define  __FIGHTER_H__
-
-
-#define FIGHTER_WALK_FRAMES 12
-#define FIGHTER_JUMP_FRAMES 20
-#define FIGHTER_STAND_FRAMES 24
-#define FIGHTER_H_FRAMES 10
-#define FIGHTER_DEFAULT_FRAMES 4
-
-#define FIGHTER_WALK_SPEED 2
-#define FIGHTER_JUMP_SPEED 4
-
-#define FIGHTER_STAND_ANIMATION1 	 0
-#define FIGHTER_STAND_ANIMATION2 	 4
-#define FIGHTER_WALK_ANIMATION1 	 8
-#define FIGHTER_WALK_ANIMATION2 	12
-#define FIGHTER_CROUCH				16
-#define FIGHTER_LP					20
-#define FIGHTER_HP					24
-#define FIGHTER_LK					28
-#define FIGHTER_HK					32
-#define FIGHTER_LP_CROUCH			36
-#define FIGHTER_HP_CROUCH			40
-#define FIGHTER_LK_CROUCH			44
-#define FIGHTER_HK_CROUCH			48
-#define FIGHTER_JUMP				52
-#define FIGHTER_LP_JUMP				56
-#define FIGHTER_LK_JUMP				60
-#define FIGHTER_HP_JUMP				64
-#define FIGHTER_HK_JUMP				68
-#define FIGHTER_JUMP_RIGHT			72
-#define FIGHTER_LP_JUMP_RIGHT		76
-#define FIGHTER_LK_JUMP_RIGHT		80
-#define FIGHTER_HP_JUMP_RIGHT		84
-#define FIGHTER_HK_JUMP_RIGHT		88
-#define FIGHTER_JUMP_LEFT			92
-#define FIGHTER_LP_JUMP_LEFT		96
-#define FIGHTER_LK_JUMP_LEFT	   100
-#define FIGHTER_HP_JUMP_LEFT	   104
-#define FIGHTER_HK_JUMP_LEFT	   108
-
-
-
-
-
-/*
-NOTAS: 
-sprfighter_walk_10 y sprfighter_walk_11 no se utilizan
-sprfighter_hp1 es el mismo frame que sprfighter_stand_01 (o debería)
-sprfighter_hk0 y sprfighter_lk0 son los mismos frames (o deberían)
-falta sprite de salto con piña fuerte
-*/
-
-
 const unsigned char sprcapa_00010 []={
 0x00,0x01,0x0f,0x1f,0x1b,0x11,0x09,0x3c,0x7c,0x8f,0xcf,0x8e,0x9e,0x83,0x41,0x67,0x00,0xe0,0xf0,0xf0,0xb0,0x20,0x20,0xc0,0x38,0xfe,0x32,0x32,0x32,0x66,0xf8,0xf0};
 const unsigned char sprcapa_00012 []={
@@ -171,5 +116,3 @@ const unsigned char sprfighter_win0 []={
 0x00,0x01,0x0f,0x1f,0x1b,0x11,0x09,0x3c,0x7c,0x8f,0xcf,0x8e,0x9e,0x83,0x41,0x67,0x00,0xe0,0xf0,0xf0,0x70,0x30,0x60,0x60,0x20,0xf0,0x38,0x38,0x38,0x70,0xd0,0xf8};
 const unsigned char sprfighter_win2 []={
 0x3f,0x0f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x3f,0x3f,0x3f,0x3d,0x39,0x39,0x7d,0x7f,0xe6,0xf2,0xe2,0xfc,0xf0,0xe0,0xc0,0xe0,0xe0,0xe0,0xe0,0xc0,0xc0,0xc0,0xf0,0xf8};
-
-#endif

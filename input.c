@@ -53,3 +53,54 @@ char joytrig(char n) __naked {
 	ret
   __endasm;
 }
+
+//read joystick input, return
+char joy_read(char n)
+{
+	char status=0;
+	
+	switch(joystick(n))
+	{
+		case DIRECTION_UP: //1
+			status |= JOYSTICK_UP;
+			break;
+		case DIRECTION_UPRIGHT: //2
+			status |= (JOYSTICK_UP|JOYSTICK_RIGHT);
+			break;
+		case DIRECTION_RIGHT: //3
+			status |= JOYSTICK_RIGHT;
+			break;
+		case DIRECTION_DOWNRIGHT: //4
+			status |= (JOYSTICK_DOWN|JOYSTICK_RIGHT);			
+			break;
+		case DIRECTION_DOWN: //5
+			status |= JOYSTICK_DOWN;
+			break;
+		case DIRECTION_DOWNLEFT: //6
+			status |= (JOYSTICK_DOWN|JOYSTICK_LEFT);
+			break;
+		case DIRECTION_LEFT: //7
+			status |= JOYSTICK_LEFT;
+			break;
+		case DIRECTION_UPLEFT: //8
+			status |= (JOYSTICK_UP|JOYSTICK_LEFT);
+			break;
+	}
+
+	//read buttons
+
+	if(n==1)
+	{
+		if(joytrig(1)) status |= JOYSTICK_TRIGA; //joy1 button 1
+		if(joytrig(3)) status |= JOYSTICK_TRIGB;	//joy1 button 2
+	}else if (n==2)
+	{
+		if(joytrig(2)) status |= JOYSTICK_TRIGA; //joy2 button 1
+		if(joytrig(4)) status |= JOYSTICK_TRIGB;	//joy2 button 2
+
+	}
+
+	return status;
+
+}
+

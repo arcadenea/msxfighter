@@ -6,6 +6,7 @@ CFLAGS+= --code-loc 0x4020 --data-loc 0xc000 -mz80 --no-std-crt0
 #CFLAGS+= --noinduction 
 #CFLAGS+= --nojtbound
 #CFLAGS+= --noloopreverse --nolabelopt --no-xinit-opt --nooverlay --no-peep --no-peep-return
+#CFLAGS+=--opt-code-speed --fomit-frame-pointer #--max-allocs-per-node 6000 --allow-unsafe-read
 OBJS=VDP_TMS9918A_ROM.rel main.rel sprite.rel input.rel tilemap.rel
 CRTOBJ=crt/crt0msx.16k.4000.rel
 CRTSRC=crt/crt0msx.16k.4000.s

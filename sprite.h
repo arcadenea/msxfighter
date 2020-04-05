@@ -9,7 +9,7 @@
 
 void setup_sprites(char spritesize, char zoom);
 
-void load_sprite(int index, unsigned int sprite, int size, int flipx);
+void load_sprite(unsigned char index, unsigned int sprite, unsigned char flipx);
 
 void draw_sprite(unsigned char index, unsigned char posx, unsigned char posy, unsigned char color);
 
