@@ -13,6 +13,6 @@ MSX fighting game
 Build with MAKE, you will need sdcc compiler and sdasz80 assembler in your system.
 
 ## WIP
-<iframe width="560" height="315" src="https://www.youtube.com/embed/sNvv10DrwhU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/sNvv10DrwhU/0.jpg)](https://www.youtube.com/watch?v=sNvv10DrwhU)
 Added basic collitions, sprite flickering and sprite handler subsystem.
 
