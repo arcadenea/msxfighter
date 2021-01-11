@@ -17,6 +17,6 @@ Build with MAKE, you will need sdcc compiler and sdasz80 assembler in your syste
 [![MSX Fighter](http://img.youtube.com/vi/UrgJu678xL8/0.jpg)](http://www.youtube.com/watch?v=UrgJu678xL8 "MSX Fighter")
 
 2020-04: Basic punch(es), kick(es) and player movements
-[![MSX Fighter](http://img.youtube.com/vi/UrgJu678xL8/0.jpg)](http://www.youtube.com/watch?v=UrgJu678xL8 "MSX Fighter")
+[Video](http://www.youtube.com/watch?v=UrgJu678xL8)
 
 
