@@ -3,6 +3,16 @@
 #include "VDP_TMS9918A.h"
 #include "sprite.h"
 
+struct sprite_element {
+	unsigned char usage;
+	unsigned char index;
+	unsigned int  sprite;
+	unsigned char flip;
+	unsigned char character; //fighter number
+};
+
+struct sprite_element sprite_list_vram[60]; //sprites in vram
+
 void setup_sprites(char spritesize, char zoom) __naked {
 
 	/*
@@ -146,10 +156,46 @@ void invert_sprite_x(unsigned int source, unsigned int dest) __naked {
 
 }
 
-void load_sprite(unsigned char index, unsigned int sprite, unsigned char flipx)
+//raw, fast load of sprite without flipping
+unsigned char load_sprite_unmanaged(unsigned char index, unsigned int sprite)
 {
-		if(flipx) invert_sprite_x((unsigned int) sprite, BASE14+(((unsigned int)index)<<5));
-		else CopyToVRAM((unsigned int) sprite, BASE14+(((unsigned int)index)<<5), 32);
+		//if(flipx) invert_sprite_x((unsigned int) sprite, BASE14+(((unsigned int)index)<<5));
+		//else 
+		CopyToVRAM((unsigned int) sprite, BASE14+(((unsigned int)index)<<5), 32);
+}
+
+unsigned char load_sprite(unsigned int sprite, unsigned char flipx)
+{
+	unsigned char i;
+	unsigned char less_usage = 0; //sprite with less usage in vram
+
+
+	for(i = 0; i<=60; i++)
+	{
+
+		if((sprite_list_vram[i].sprite == sprite) 	&&
+			(sprite_list_vram[i].flip == flipx)		&&
+			(sprite_list_vram[i].character == 0))
+		{
+			if(sprite_list_vram[i].usage < 255) sprite_list_vram[i].usage++;	
+			return sprite_list_vram[i].index; //sprite is in vram, return index
+		}
+
+		if(sprite_list_vram[less_usage].usage > sprite_list_vram[i].usage) less_usage = i;
+		if(sprite_list_vram[i].usage > 0) sprite_list_vram[i].usage--;
+	}
+
+		sprite_list_vram[less_usage].character = 0;
+		sprite_list_vram[less_usage].usage = 255;
+		sprite_list_vram[less_usage].index = less_usage;
+		sprite_list_vram[less_usage].sprite = sprite;
+		sprite_list_vram[less_usage].flip = flipx;
+
+		if(flipx) invert_sprite_x((unsigned int) sprite, BASE14+(((unsigned int)less_usage)<<5));
+		else CopyToVRAM((unsigned int) sprite, BASE14+(((unsigned int)less_usage)<<5), 32);
+
+		return sprite_list_vram[less_usage].index;
+
 }
 
 
@@ -157,10 +203,34 @@ void load_sprite(unsigned char index, unsigned int sprite, unsigned char flipx)
 Bits 6 - 4 should be zero officially, but they are ignored. If the colour is 
 0, the sprite is transparent (not visible).*/
 
-void draw_sprite(unsigned char index, unsigned char posx, unsigned char posy, unsigned char color)
+void draw_sprite(unsigned char index, unsigned char spr_index, unsigned char posx, unsigned char posy, unsigned char color)
 {
 	VPOKE(BASE13+(index<<2), posy); //sprite1y
 	VPOKE(BASE13+(index<<2)+1, posx); //sprite1x
-	VPOKE(BASE13+(index<<2)+2, index); //sprite1index
+	VPOKE(BASE13+(index<<2)+2, spr_index<<2); //sprite1index
 	VPOKE(BASE13+(index<<2)+3, color); //sprite1color
 }
+
+
+int is_sprite_in_vram(unsigned int sprite)
+{
+
+
+}
+
+
+void init_sprite_manager()
+{
+
+unsigned char i;
+	for(i = 0; i<=60; i++)
+	{
+		sprite_list_vram[i].character = 0;
+		sprite_list_vram[i].usage = 0;
+		sprite_list_vram[i].index = 63;
+		sprite_list_vram[i].sprite = 0;
+		sprite_list_vram[i].flip = 0;
+
+	}
+}
+

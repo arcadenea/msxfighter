@@ -39,6 +39,8 @@
 #define PLAYER_HK_JUMP_LEFT 28
 #define PLAYER_HK_JUMP_RIGHT 29
 
+unsigned char flicker; //flicker variable
+__at 0xFC9E unsigned int jiffy; //the damn jiffy variable
 
 struct players {
 	unsigned char posx;
@@ -53,18 +55,16 @@ struct players {
 	unsigned char prevframe; //frame counter backup for jumps
 	unsigned char flipx; //flip position
 	unsigned char color;
-	unsigned char spr_index; //start position of sprite order
+	unsigned char spr_index1; //start position of sprite order
+	unsigned char spr_index2; //start position of sprite order
+	unsigned char spr_index3; //start position of sprite order
+	unsigned char spr_index4; //start position of sprite order
 };
 
 struct players player[2];
 unsigned char i;
 
-unsigned int * frames[256];
-
-
-const unsigned char empty_sprite[]={
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-};
+unsigned char debug_sprite=0;
 
 
 void VPRINT(char column, char line, char* text);  //print in screen 1 or 2
@@ -82,8 +82,14 @@ void VPRINT(char column, char line, char* text)
 
 void WAIT(unsigned int cicles)
 {
-  int i;
-  for(i=0;i<cicles;i++) HALT;
+	int jiffyref;
+	jiffyref = jiffy;
+	while(jiffy < 1 || jiffyref == jiffy) 
+	{ 
+		HALT; 	
+	}
+//  int i;
+//  for(i=0;i<cicles;i++) HALT;
 }
 
 void POKE(unsigned int address, char value)
@@ -120,10 +126,103 @@ char checkCollision(char posx, char posy, char direction)
 } 
 
 
+void load_sprites()
+{
+
+/*sprite order
+Player 1	Player 2
+0	2		4	6
+1	3		5	7
+*/
+
+	if(player[0].animation!=player[0].animation_load)
+	{
+
+		player[0].spr_index1 = load_sprite((unsigned int) fighters[0].frames[player[0].animation_load].spr0, player[0].flipx);
+		player[0].spr_index2 = load_sprite((unsigned int) fighters[0].frames[player[0].animation_load].spr1, player[0].flipx);
+		player[0].spr_index3 = load_sprite((unsigned int) fighters[0].frames[player[0].animation_load].spr2, player[0].flipx);
+		player[0].spr_index4 = load_sprite((unsigned int) fighters[0].frames[player[0].animation_load].spr3, player[0].flipx);
+		player[0].animation=player[0].animation_load;
+	}
+
+	if(player[1].animation!=player[1].animation_load)
+	{
+		player[1].spr_index1 = load_sprite((unsigned int) fighters[0].frames[player[1].animation_load].spr0, player[1].flipx);
+		player[1].spr_index2 = load_sprite((unsigned int) fighters[0].frames[player[1].animation_load].spr1, player[1].flipx);
+		player[1].spr_index3 = load_sprite((unsigned int) fighters[0].frames[player[1].animation_load].spr2, player[1].flipx);
+		player[1].spr_index4 = load_sprite((unsigned int) fighters[0].frames[player[1].animation_load].spr3, player[1].flipx);
+		player[1].animation=player[1].animation_load;
+	}
+
+}
+
+
+void draw_sprites()
+{
+
+		if(player[0].flipx==0)
+		{
+			draw_sprite(0, player[0].spr_index1, player[0].posx, player[0].posy-32, player[0].color);
+			draw_sprite(1, player[0].spr_index2, player[0].posx, player[0].posy, player[0].color);
+			draw_sprite(4, player[1].spr_index1, player[1].posx, player[1].posy-32, player[1].color);
+			draw_sprite(5, player[1].spr_index2, player[1].posx, player[1].posy, player[1].color);
+		}else{
+			draw_sprite(0, player[0].spr_index1, player[0].posx, player[0].posy-32, player[0].color);
+			draw_sprite(1, player[0].spr_index2, player[0].posx, player[0].posy, player[0].color);
+			draw_sprite(4, player[1].spr_index1, player[1].posx, player[1].posy-32, player[1].color);
+			draw_sprite(5, player[1].spr_index2, player[1].posx, player[1].posy, player[1].color);
+		}
+
+		draw_sprite(29, debug_sprite, 20, 20, BLACK); //debug
+
+		if(flicker == 0){
+			draw_sprite(30, 61, player[0].posx, player[0].posy-32, CYAN); //collision box
+			draw_sprite(31, 62, player[0].posx, player[0].posy, CYAN); //collision box
+
+			draw_sprite(31, 63, player[0].posx, 180, BLACK); //shadow
+
+
+//			draw_sprite(2, player[0].spr_index2, 255, 255, player[0].color);
+//			draw_sprite(3, player[0].spr_index3, 255, 255, player[0].color);
+
+//			draw_sprite(6, player[1].spr_index2, 255, 255, player[1].color);
+//			draw_sprite(7, player[1].spr_index3, 255, 255, player[1].color);
+
+			flicker=1;
+		}else{
+			draw_sprite(30, 61, player[1].posx, player[1].posy-32, CYAN); //collision box
+			draw_sprite(31, 62, player[1].posx, player[1].posy, CYAN); //collision box
+
+			draw_sprite(31, 63, player[1].posx, 180, BLACK); //shadow
+
+
+/*			if(player[0].flipx==0)
+			{
+				draw_sprite(2, 8, player[0].posx+32, player[0].posy-32, player[0].color);
+				draw_sprite(3, 12, player[0].posx+32, player[0].posy, player[0].color);
+
+				draw_sprite(6, 24, player[1].posx-32, player[1].posy-32, player[1].color);
+				draw_sprite(7, 28, player[1].posx-32, player[1].posy, player[1].color);
+			}else{
+				draw_sprite(2, 8, player[0].posx-32, player[0].posy-32, player[0].color);
+				draw_sprite(3, 12, player[0].posx-32, player[0].posy, player[0].color);
+
+				draw_sprite(6, 24, player[1].posx+32, player[1].posy-32, player[1].color);
+				draw_sprite(7, 28, player[1].posx+32, player[1].posy, player[1].color);
+			}*/
+
+		flicker = 0;
+
+		}
+
+
+}
+
 void main(void)
 {
 
 unsigned char i=0;
+flicker = 0;
 //initialize screen mode
 //POKE(0xF3AF,32); // set 32 columns per line
 COLOR(15,15,15);
@@ -134,7 +233,7 @@ SCREEN(GRAPH1);
 player[i].flipx = 0;
 player[0].posx = 40;
 player[0].posy = 148;
-player[0].animation_load=255;
+player[0].animation_load=0;
 player[0].prevframe=0;
 player[0].frame=FIGHTER_STAND_FRAMES;
 player[0].action=PLAYER_STAND;
@@ -142,8 +241,11 @@ player[0].joystick = 0;
 player[0].joy_trigp = 0;
 player[0].joy_trigk = 0;
 player[0].color=BLACK;
-player[0].spr_index=0;
-player[0].animation=255;
+player[0].spr_index1=64;
+player[0].spr_index2=64;
+player[0].spr_index3=64;
+player[0].spr_index4=64;
+player[0].animation=64;
 
 player[1].flipx = 1;
 player[1].posx = 110;
@@ -156,150 +258,14 @@ player[1].joystick = 0;
 player[1].joy_trigp = 0;
 player[1].joy_trigk = 0;
 player[1].color=DARK_RED;
-player[1].spr_index=4;
+player[1].spr_index1=64;
+player[1].spr_index2=64;
+player[1].spr_index3=64;
+player[1].spr_index4=64;
 player[1].animation=255;
 
-//FIGHTER_STAND_ANIMATION1 	
-frames[0] = (unsigned int *) sprfighter_stand_00;
-frames[1] = (unsigned int *) sprfighter_stand_01;
-frames[2] = (unsigned int *) empty_sprite;
-frames[3] = (unsigned int *) empty_sprite;
-// FIGHTER_STAND_ANIMATION2 	 
-frames[4] = (unsigned int *) sprfighter_stand_10;
-frames[5] = (unsigned int *) sprfighter_stand_11;
-frames[6] = (unsigned int *) empty_sprite;
-frames[7] = (unsigned int *) empty_sprite;
-// FIGHTER_WALK_ANIMATION1 	 
-frames[8] = (unsigned int *) sprfighter_stand_10;
-frames[9] = (unsigned int *) sprfighter_stand_11;
-frames[10] = (unsigned int *) empty_sprite;
-frames[11] = (unsigned int *) empty_sprite;
-// FIGHTER_WALK_ANIMATION2 
-frames[12] = (unsigned int *) sprfighter_walk_00;
-frames[13] = (unsigned int *) sprfighter_walk_01;
-frames[14] = (unsigned int *) empty_sprite;
-frames[15] = (unsigned int *) empty_sprite;
-// FIGHTER_CROUCH				
-frames[16] = (unsigned int *) empty_sprite;
-frames[17] = (unsigned int *) sprfighter_crouch2;
-frames[18] = (unsigned int *) empty_sprite;
-frames[19] = (unsigned int *) empty_sprite;
-// FIGHTER_LP					
-frames[20] = (unsigned int *) sprfighter_lp0;
-frames[21] = (unsigned int *) sprfighter_lp2;
-frames[22] = (unsigned int *) sprfighter_lp1;
-frames[23] = (unsigned int *) empty_sprite;
-// FIGHTER_HP					
-frames[24] = (unsigned int *) sprfighter_hp0;
-frames[25] = (unsigned int *) sprfighter_hp2;
-frames[26] = (unsigned int *) sprfighter_hp1;
-frames[27] = (unsigned int *) empty_sprite;
-// FIGHTER_LK					
-frames[28] = (unsigned int *) sprfighter_lk0;
-frames[29] = (unsigned int *) sprfighter_lk2;
-frames[30] = (unsigned int *) empty_sprite;
-frames[31] = (unsigned int *) sprfighter_lk3;
-// FIGHTER_HK					
-frames[32] = (unsigned int *) sprfighter_hk0;
-frames[33] = (unsigned int *) sprfighter_hk2;
-frames[34] = (unsigned int *) empty_sprite;
-frames[35] = (unsigned int *) sprfighter_hk3;
-// FIGHTER_LP_CROUCH			
-frames[36] = (unsigned int *) empty_sprite;
-frames[37] = (unsigned int *) sprfighter_crouch_lp2;
-frames[38] = (unsigned int *) empty_sprite;
-frames[39] = (unsigned int *) sprfighter_crouch_lp3;
-// FIGHTER_HP_CROUCH			
-frames[40] = (unsigned int *) sprfighter_crouch_hp0;
-frames[41] = (unsigned int *) sprfighter_crouch_hp2;
-frames[42] = (unsigned int *) sprfighter_crouch_hp1;
-frames[43] = (unsigned int *) sprfighter_crouch_hp3;
-// FIGHTER_LK_CROUCH			
-frames[44] = (unsigned int *) empty_sprite;
-frames[45] = (unsigned int *) sprfighter_crouch_lk2;
-frames[46] = (unsigned int *) empty_sprite;
-frames[47] = (unsigned int *) sprfighter_crouch_lk3;
-// FIGHTER_HK_CROUCH			
-frames[48] = (unsigned int *) empty_sprite;
-frames[49] = (unsigned int *) sprfighter_crouch_hk2;
-frames[50] = (unsigned int *) empty_sprite;
-frames[51] = (unsigned int *) sprfighter_crouch_hk3;
-// FIGHTER_JUMP				
-frames[52] = (unsigned int *) sprfighter_jump0;
-frames[53] = (unsigned int *) sprfighter_jump2;
-frames[54] = (unsigned int *) empty_sprite;
-frames[55] = (unsigned int *) empty_sprite;
-// FIGHTER_LP_JUMP				
-frames[56] = (unsigned int *) sprfighter_jump_lp0;
-frames[57] = (unsigned int *) sprfighter_jump_lp2;
-frames[58] = (unsigned int *) sprfighter_jump_lp1;
-frames[59] = (unsigned int *) sprfighter_jump_lp3;
-// FIGHTER_LK_JUMP				
-frames[60] = (unsigned int *) sprfighter_jump_lk0;
-frames[61] = (unsigned int *) sprfighter_jump_lk2;
-frames[62] = (unsigned int *) empty_sprite;
-frames[63] = (unsigned int *) empty_sprite;
-// FIGHTER_HP_JUMP				
-frames[64] = (unsigned int *) sprfighter_jump_lp0;
-frames[65] = (unsigned int *) sprfighter_jump_lp2;
-frames[66] = (unsigned int *) sprfighter_jump_lp1;
-frames[67] = (unsigned int *) sprfighter_jump_lp3;
-// FIGHTER_HK_JUMP				
-frames[68] = (unsigned int *) sprfighter_jump_hk0;
-frames[69] = (unsigned int *) sprfighter_jump_hk2;
-frames[70] = (unsigned int *) empty_sprite;
-frames[71] = (unsigned int *) sprfighter_jump_hk3;
-// FIGHTER_JUMP_RIGHT			
-frames[72] = (unsigned int *) sprfighter_jump0;
-frames[73] = (unsigned int *) sprfighter_jump2;
-frames[74] = (unsigned int *) empty_sprite;
-frames[75] = (unsigned int *) empty_sprite;
-// FIGHTER_LP_JUMP_RIGHT		
-frames[76] = (unsigned int *) sprfighter_jump_lp0;
-frames[77] = (unsigned int *) sprfighter_jump_lp2;
-frames[78] = (unsigned int *) sprfighter_jump_lp1;
-frames[79] = (unsigned int *) sprfighter_jump_lp3;
-// FIGHTER_LK_JUMP_RIGHT		
-frames[80] = (unsigned int *) sprfighter_jump_lk0;
-frames[81] = (unsigned int *) sprfighter_jump_lk2;
-frames[82] = (unsigned int *) empty_sprite;
-frames[83] = (unsigned int *) empty_sprite;
-// FIGHTER_HP_JUMP_RIGHT		
-frames[84] = (unsigned int *) sprfighter_walk_00;
-frames[85] = (unsigned int *) sprfighter_walk_01;
-frames[86] = (unsigned int *) empty_sprite;
-frames[87] = (unsigned int *) empty_sprite;
-// FIGHTER_HK_JUMP_RIGHT		
-frames[88] = (unsigned int *) sprfighter_jump_hk0;
-frames[89] = (unsigned int *) sprfighter_jump_hk2;
-frames[90] = (unsigned int *) empty_sprite;
-frames[91] = (unsigned int *) sprfighter_jump_hk3;
-// FIGHTER_JUMP_LEFT			
-frames[92] = (unsigned int *) sprfighter_jump0;
-frames[93] = (unsigned int *) sprfighter_jump2;
-frames[94] = (unsigned int *) empty_sprite;
-frames[95] = (unsigned int *) empty_sprite;
-// FIGHTER_LP_JUMP_LEFT		
-frames[96] = (unsigned int *) sprfighter_jump_lp0;
-frames[97] = (unsigned int *) sprfighter_jump_lp2;
-frames[98] = (unsigned int *) sprfighter_jump_lp1;
-frames[99] = (unsigned int *) sprfighter_jump_lp3;
-// FIGHTER_LK_JUMP_LEFT		
-frames[100] = (unsigned int *) sprfighter_jump_lk0;
-frames[101] = (unsigned int *) sprfighter_jump_lk2;
-frames[102] = (unsigned int *) empty_sprite;
-frames[103] = (unsigned int *) empty_sprite;
-// FIGHTER_HP_JUMP_LEFT	   
-frames[104] = (unsigned int *) sprfighter_walk_00;
-frames[105] = (unsigned int *) sprfighter_walk_01;
-frames[106] = (unsigned int *) empty_sprite;
-frames[107] = (unsigned int *) empty_sprite;
-// FIGHTER_HK_JUMP_LEFT	   
-frames[108] = (unsigned int *) sprfighter_jump_hk0;
-frames[109] = (unsigned int *) sprfighter_jump_hk2;
-frames[110] = (unsigned int *) empty_sprite;
-frames[111] = (unsigned int *) sprfighter_jump_hk3;
-
+//load fighter animations and collision boxes
+load_fighter();
 
 
 //cargamos tilemap
@@ -312,16 +278,17 @@ load_colormap((unsigned int) COLORMAP_2, 2048, BANK2);
 load_tilemap((unsigned int) TILEMAP, 768); //32*24 tiles
 
 
-/*sprite order
-Player 1	Player 2
-0	2		4	6
-1	3		5	7
-*/
+init_sprite_manager();
+//load static sprites
+load_sprite_unmanaged(61, (unsigned int) collision_up);
+load_sprite_unmanaged(62, (unsigned int) collision_down);
+load_sprite_unmanaged(63, (unsigned int) shadow);
 
+debug_sprite = 0;
 
 while(1){
 
-
+jiffy = 0;
 //read joystick(s) input
 for(i=0;i<2;i++)
 {
@@ -334,12 +301,13 @@ for(i=0;i<2;i++)
 		{ 
 			player[i].action = PLAYER_MOVE_RIGHT;
 			player[i].frame=FIGHTER_WALK_FRAMES;
-			//player[0].animation_load=255;
+			if(debug_sprite < 255) debug_sprite++;
 		}else if(player[i].joystick&JOYSTICK_LEFT)//&&(player[i].posx>=10))
 		{	
 			player[i].action = PLAYER_MOVE_LEFT; 
 			player[i].frame=FIGHTER_WALK_FRAMES;
 			//player[0].animation_load=255;
+			if(debug_sprite > 0) debug_sprite--;
 		} 
 		
 		if((player[i].joystick&JOYSTICK_DOWN))
@@ -395,21 +363,21 @@ for(i=0;i<2;i++)
 			switch(player[i].action) 
 			{
 				case PLAYER_CROUCH: player[i].action = PLAYER_LP_CROUCH;
-				break;
+					break;
 				case PLAYER_JUMP: 
 					player[i].action = PLAYER_LP_JUMP;
 					player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_LEFT: 
 					player[i].action = PLAYER_LP_JUMP_LEFT;
 					player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_RIGHT: 
 					player[i].action = PLAYER_LP_JUMP_RIGHT;
 					player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_STAND: player[i].action = PLAYER_LP;
-				break;
+					break;
 			}
 			player[i].frame=FIGHTER_DEFAULT_FRAMES;
 		}
@@ -427,20 +395,17 @@ for(i=0;i<2;i++)
 			switch(player[i].action) 
 			{
 				case PLAYER_CROUCH: player[i].action = PLAYER_HK_CROUCH;
-				break;
+					break;
 				case PLAYER_JUMP: player[i].action = PLAYER_HK_JUMP;
-				//	player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_LEFT: 
 					player[i].action = PLAYER_HK_JUMP_LEFT;
-				//	player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_RIGHT: 
 					player[i].action = PLAYER_HK_JUMP_RIGHT;
-				//	player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_STAND: player[i].action = PLAYER_HK;
-				break;
+					break;
 			}
 			player[i].prevframe = player[i].frame-FIGHTER_DEFAULT_FRAMES; //backup frames
 			player[i].frame=FIGHTER_DEFAULT_FRAMES;
@@ -449,20 +414,17 @@ for(i=0;i<2;i++)
 			switch(player[i].action) 
 			{
 				case PLAYER_CROUCH: player[i].action = PLAYER_LK_CROUCH;
-				break;
+					break;
 				case PLAYER_JUMP: player[i].action = PLAYER_LK_JUMP;
-					//player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_LEFT: 
 					player[i].action = PLAYER_LK_JUMP_LEFT;
-					//player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_JUMP_RIGHT: 
 					player[i].action = PLAYER_LK_JUMP_RIGHT;
-					//player[i].prevframe = player[i].frame; //backup frames
-				break;
+					break;
 				case PLAYER_STAND: player[i].action = PLAYER_LK;
-				break;
+					break;
 			}
 			player[i].prevframe = player[i].frame-FIGHTER_H_FRAMES; //backup frames
 			player[i].frame=FIGHTER_H_FRAMES;
@@ -673,49 +635,11 @@ for(i=0;i<2;i++)
 }
 
 
-//draw sprites
+//load & draw sprites
+load_sprites();
+draw_sprites();
+
 	
-	if(player[0].animation!=player[0].animation_load)
-	{
-		load_sprite(player[0].spr_index, (unsigned int) frames[player[0].animation_load], player[0].flipx);
-		load_sprite(player[0].spr_index+1, (unsigned int) frames[player[0].animation_load+1], player[0].flipx);	
-		load_sprite(player[0].spr_index+2, (unsigned int) frames[player[0].animation_load+2], player[0].flipx);
-		load_sprite(player[0].spr_index+3, (unsigned int) frames[player[0].animation_load+3], player[0].flipx);
-		player[0].animation=player[0].animation_load;
-	}
-
-	if(player[1].animation!=player[1].animation_load)
-	{
-		load_sprite(player[1].spr_index, (unsigned int) frames[player[1].animation_load], player[1].flipx);
-		load_sprite(player[1].spr_index+1, (unsigned int) frames[player[1].animation_load+1], player[1].flipx);	
-		load_sprite(player[1].spr_index+2, (unsigned int) frames[player[1].animation_load+2], player[1].flipx);
-		load_sprite(player[1].spr_index+3, (unsigned int) frames[player[1].animation_load+3], player[1].flipx);
-		player[1].animation=player[1].animation_load;
-	}
-
-	if(player[0].flipx==0)
-	{
-		draw_sprite(0, player[0].posx, player[0].posy-32, player[0].color);
-		draw_sprite(4, player[0].posx, player[0].posy, player[0].color);
-		draw_sprite(8, player[0].posx+32, player[0].posy-32, player[0].color);
-		draw_sprite(12, player[0].posx+32, player[0].posy, player[0].color);
-
-		draw_sprite(16, player[1].posx, player[1].posy-32, player[1].color);
-		draw_sprite(20, player[1].posx, player[1].posy, player[1].color);
-		draw_sprite(24, player[1].posx-32, player[1].posy-32, player[1].color);
-		draw_sprite(28, player[1].posx-32, player[1].posy, player[1].color);
-	}else{
-		draw_sprite(0, player[0].posx, player[0].posy-32, player[0].color);
-		draw_sprite(4, player[0].posx, player[0].posy, player[0].color);
-		draw_sprite(8, player[0].posx-32, player[0].posy-32, player[0].color);
-		draw_sprite(12, player[0].posx-32, player[0].posy, player[0].color);
-
-		draw_sprite(16, player[1].posx, player[1].posy-32, player[1].color);
-		draw_sprite(20, player[1].posx, player[1].posy, player[1].color);
-		draw_sprite(24, player[1].posx+32, player[1].posy-32, player[1].color);
-		draw_sprite(28, player[1].posx+32, player[1].posy, player[1].color);
-	}
-
 
 	WAIT(1);
 
